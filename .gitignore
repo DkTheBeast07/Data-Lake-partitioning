@@ -43,6 +43,14 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Generated data output (not tracked)
+data/output/
+data/quarantine/
+data/metrics/
+data/state/
+data/*.csv
+data/*.json
+
 # Environment
 .env
 .venv
