@@ -54,3 +54,7 @@ data/*.json
 # Environment
 .env
 .venv
+
+# Reference documents (not part of project code)
+project_to_done.md
+approach.md
