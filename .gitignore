@@ -58,3 +58,5 @@ data/*.json
 # Reference documents (not part of project code)
 project_to_done.md
 approach.md
+project.md
+ourapproach.md
