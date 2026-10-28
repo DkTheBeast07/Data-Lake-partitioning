@@ -37,11 +37,6 @@
       "type": "string",
       "nullable": false,
       "description": "Source file name for traceability"
-    },
-    "run_id": {
-      "type": "string",
-      "nullable": false,
-      "description": "Unique pipeline run identifier"
     }
   },
   "target_schema": {

@@ -85,7 +85,12 @@ class DataLakePipeline:
 
         # Extract event_date from event_timestamp for partitioning
         if "event_timestamp" in df.columns:
-            df["event_date"] = pd.to_datetime(df["event_timestamp"]).dt.strftime("%Y-%m-%d")
+            # Use errors='coerce' to convert invalid timestamps to NaT
+            df["event_timestamp_parsed"] = pd.to_datetime(
+                df["event_timestamp"], errors="coerce"
+            )
+            df["event_date"] = df["event_timestamp_parsed"].dt.strftime("%Y-%m-%d")
+            df = df.drop(columns=["event_timestamp_parsed"])
 
         # Select only target columns
         target_columns = [
@@ -195,11 +200,34 @@ class DataLakePipeline:
         # Transform to target schema (adds run_id, ingested_at, event_date)
         valid_df = self.transform(valid_df, run_id)
 
+        # Catch records with invalid timestamps (NaT event_date)
+        if "event_date" in valid_df.columns:
+            nat_mask = valid_df["event_date"].isna()
+            nat_records = valid_df[nat_mask].copy()
+            valid_df = valid_df[~nat_mask].copy()
+            if not nat_records.empty:
+                nat_records["rejection_reason"] = "Invalid event_timestamp"
+                all_rejected_list = [
+                    schema_result.rejected_records,
+                    business_result.rejected_records,
+                    duplicate_df,
+                    nat_records,
+                ]
+            else:
+                all_rejected_list = [
+                    schema_result.rejected_records,
+                    business_result.rejected_records,
+                    duplicate_df,
+                ]
+        else:
+            all_rejected_list = [
+                schema_result.rejected_records,
+                business_result.rejected_records,
+                duplicate_df,
+            ]
+
         # Combine all rejected records
-        all_rejected = pd.concat(
-            [schema_result.rejected_records, business_result.rejected_records, duplicate_df],
-            ignore_index=True,
-        )
+        all_rejected = pd.concat(all_rejected_list, ignore_index=True)
         if not all_rejected.empty:
             all_rejected = all_rejected.drop_duplicates(subset=["event_id"], keep="first")
 
