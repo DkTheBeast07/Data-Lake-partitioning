@@ -192,6 +192,9 @@ class DataLakePipeline:
         if not duplicate_df.empty:
             print(f"Duplicate handling: {len(duplicate_df)} duplicate records removed")
 
+        # Transform to target schema (adds run_id, ingested_at, event_date)
+        valid_df = self.transform(valid_df, run_id)
+
         # Combine all rejected records
         all_rejected = pd.concat(
             [schema_result.rejected_records, business_result.rejected_records, duplicate_df],

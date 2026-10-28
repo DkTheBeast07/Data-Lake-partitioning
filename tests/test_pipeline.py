@@ -39,6 +39,7 @@ def sample_csv():
     ])
     tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False)
     data.to_csv(tmp.name, index=False)
+    tmp.close()
     yield tmp.name
     os.unlink(tmp.name)
 
@@ -65,6 +66,7 @@ def invalid_csv():
     ])
     tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False)
     data.to_csv(tmp.name, index=False)
+    tmp.close()
     yield tmp.name
     os.unlink(tmp.name)
 
