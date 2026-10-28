@@ -226,8 +226,12 @@ class DataLakePipeline:
                 duplicate_df,
             ]
 
-        # Combine all rejected records
-        all_rejected = pd.concat(all_rejected_list, ignore_index=True)
+        # Combine all rejected records (skip empty DataFrames)
+        non_empty_rejected = [r for r in all_rejected_list if not r.empty]
+        if non_empty_rejected:
+            all_rejected = pd.concat(non_empty_rejected, ignore_index=True)
+        else:
+            all_rejected = pd.DataFrame(columns=valid_df.columns)
         if not all_rejected.empty:
             all_rejected = all_rejected.drop_duplicates(subset=["event_id"], keep="first")
 
