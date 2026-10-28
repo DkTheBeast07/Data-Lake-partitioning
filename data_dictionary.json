@@ -1,0 +1,167 @@
+{
+  "project": "data-lake-partitioning",
+  "version": "1.0.0",
+  "description": "Time-partitioned data lake partitioning and file-sizing strategy",
+  "source_schema": {
+    "event_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Unique identifier for each event",
+      "primary_key": true
+    },
+    "event_timestamp": {
+      "type": "timestamp",
+      "nullable": false,
+      "format": "ISO-8601",
+      "description": "When the event occurred",
+      "partition_key": true
+    },
+    "entity_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Identifier of the entity the event relates to",
+      "foreign_key": "entities.entity_id"
+    },
+    "amount": {
+      "type": "decimal(18,2)",
+      "nullable": true,
+      "description": "Monetary value associated with the event"
+    },
+    "status": {
+      "type": "string",
+      "nullable": false,
+      "description": "Event status",
+      "valid_values": ["PENDING", "COMPLETED", "FAILED", "CANCELLED"]
+    },
+    "source_file": {
+      "type": "string",
+      "nullable": false,
+      "description": "Source file name for traceability"
+    },
+    "run_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Unique pipeline run identifier"
+    }
+  },
+  "target_schema": {
+    "event_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Unique identifier for each event",
+      "primary_key": true
+    },
+    "event_date": {
+      "type": "date",
+      "nullable": false,
+      "format": "YYYY-MM-DD",
+      "description": "Date extracted from event_timestamp for partitioning",
+      "partition_key": true
+    },
+    "event_timestamp": {
+      "type": "timestamp",
+      "nullable": false,
+      "description": "When the event occurred"
+    },
+    "entity_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Identifier of the entity"
+    },
+    "amount": {
+      "type": "decimal(18,2)",
+      "nullable": true,
+      "description": "Monetary value"
+    },
+    "status": {
+      "type": "string",
+      "nullable": false,
+      "description": "Event status"
+    },
+    "source_file": {
+      "type": "string",
+      "nullable": false,
+      "description": "Source file name"
+    },
+    "run_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Pipeline run identifier"
+    },
+    "ingested_at": {
+      "type": "timestamp",
+      "nullable": false,
+      "description": "When the record was ingested into the target"
+    }
+  },
+  "quarantine_schema": {
+    "event_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Unique identifier (may be missing for malformed records)"
+    },
+    "event_timestamp": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw timestamp string (may be malformed)"
+    },
+    "entity_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Entity identifier"
+    },
+    "amount": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw amount string (may be malformed)"
+    },
+    "status": {
+      "type": "string",
+      "nullable": true,
+      "description": "Raw status string"
+    },
+    "source_file": {
+      "type": "string",
+      "nullable": false,
+      "description": "Source file name"
+    },
+    "run_id": {
+      "type": "string",
+      "nullable": false,
+      "description": "Pipeline run identifier"
+    },
+    "rejected_at": {
+      "type": "timestamp",
+      "nullable": false,
+      "description": "When the record was rejected"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "nullable": false,
+      "description": "Why the record was rejected"
+    },
+    "raw_record": {
+      "type": "string",
+      "nullable": false,
+      "description": "Original raw record for traceability"
+    }
+  },
+  "naming_conventions": {
+    "tables": "snake_case",
+    "columns": "snake_case",
+    "timestamps": "ISO-8601",
+    "partitions": "year=YYYY/month=MM/day=DD",
+    "run_id": "UUID v4"
+  },
+  "partition_strategy": {
+    "type": "time-based",
+    "granularity": "daily",
+    "directory_pattern": "year={YYYY}/month={MM}/day={DD}"
+  },
+  "file_sizing": {
+    "format": "Parquet",
+    "target_size_mb": 128,
+    "compression": "snappy",
+    "coalesce": true
+  }
+}
